@@ -1,0 +1,125 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "c4a4b318-6a96-471e-b13f-c5edc4e1170c",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Context: 'artificial intelligence'\n",
+      "Top Predictions:\n",
+      ". -> 0.0513\n",
+      "and -> 0.0513\n",
+      "<s> -> 0.0256\n",
+      "natural -> 0.0256\n",
+      "language -> 0.0256\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[nltk_data] Downloading package punkt to\n",
+      "[nltk_data]     C:\\Users\\HP\\AppData\\Roaming\\nltk_data...\n",
+      "[nltk_data]   Package punkt is already up-to-date!\n"
+     ]
+    }
+   ],
+   "source": [
+    "import nltk\n",
+    "import random\n",
+    "from nltk.util import ngrams\n",
+    "from nltk.lm import Laplace\n",
+    "from nltk.lm.preprocessing import padded_everygram_pipeline\n",
+    "from nltk.tokenize import word_tokenize\n",
+    "\n",
+    "nltk.download('punkt')\n",
+    "\n",
+    "class NGramLanguageModel:\n",
+    "    def __init__(self, n):\n",
+    "        self.n = n\n",
+    "        self.model = Laplace(n)  \n",
+    "        \n",
+    "    def train(self, text):\n",
+    "        # Tokenize text\n",
+    "        tokens = word_tokenize(text.lower())\n",
+    "        \n",
+    "        train_data, padded_vocab = padded_everygram_pipeline(self.n, [tokens])\n",
+    "        \n",
+    "        self.model.fit(train_data, padded_vocab)\n",
+    "        \n",
+    "    def predict_next_word(self, context):\n",
+    "        context_tokens = word_tokenize(context.lower())\n",
+    "        \n",
+    "        context_tokens = context_tokens[-(self.n - 1):]\n",
+    "        \n",
+    "        probabilities = {}\n",
+    "        \n",
+    "        for word in self.model.vocab:\n",
+    "            prob = self.model.score(word, context_tokens)\n",
+    "            probabilities[word] = prob\n",
+    "        \n",
+    "        sorted_probs = sorted(probabilities.items(), key=lambda x: x[1], reverse=True)\n",
+    "        \n",
+    "        return sorted_probs[:5]  \n",
+    "\n",
+    "\n",
+    "if __name__ == \"__main__\":\n",
+    "    \n",
+    "    text_corpus = \"\"\"\n",
+    "    Natural language processing is a field of artificial intelligence.\n",
+    "    Language models are used to predict the next word in a sequence.\n",
+    "    N gram models are simple but effective for basic text prediction.\n",
+    "    Artificial intelligence and machine learning are transforming technology.\n",
+    "    \"\"\"\n",
+    "    \n",
+    "    n = 3  \n",
+    "    model = NGramLanguageModel(n)\n",
+    "    model.train(text_corpus)\n",
+    "    \n",
+    "    context_input = \"artificial intelligence\"\n",
+    "    \n",
+    "    predictions = model.predict_next_word(context_input)\n",
+    "    \n",
+    "    print(f\"Context: '{context_input}'\")\n",
+    "    print(\"Top Predictions:\")\n",
+    "    \n",
+    "    for word, prob in predictions:\n",
+    "        print(f\"{word} -> {prob:.4f}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "adb8d22e-e138-4227-9ddd-93560749ae1a",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
